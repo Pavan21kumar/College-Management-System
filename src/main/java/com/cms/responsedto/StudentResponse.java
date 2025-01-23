@@ -15,6 +15,7 @@ import lombok.Setter;
 @Setter
 public class StudentResponse {
 
+	private String sId;
 	private String name;
 	private String usernmae;
 	private List<Integer> marks;

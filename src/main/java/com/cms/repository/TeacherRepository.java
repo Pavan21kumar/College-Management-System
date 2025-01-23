@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import com.cms.entity.Teacher;
+import com.cms.entity.User;
 import com.cms.enums.Role;
 
 public interface TeacherRepository extends MongoRepository<Teacher, String> {
@@ -13,5 +14,7 @@ public interface TeacherRepository extends MongoRepository<Teacher, String> {
 	Optional<Teacher> findByUsername(String username);
 
 	List<Teacher> findAllByRole(Role teacher);
+
+	Optional<Teacher> findByIdAndRole(String id, Role teacher);
 
 }

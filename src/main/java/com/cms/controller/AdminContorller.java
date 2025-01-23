@@ -56,7 +56,7 @@ public class AdminContorller {
 			@ApiResponse(responseCode = "200", description = "Teachre data Found"),
 			@ApiResponse(responseCode = "400", description = "invaild inputs", content = @Content(schema = @Schema(implementation = ErrorStructure.class))) })
 
-	@GetMapping("/{id}/teachers")
+	@GetMapping("/teachers/{id}")
 	public ResponseEntity<ResponseStructure<TeacherResponse>> getTeacherById(@PathVariable("id") String id) {
 		logger.info("Fetching teacher with ID: {}", id);
 		ResponseEntity<ResponseStructure<TeacherResponse>> response = adminService.getTeacherById(id);
@@ -82,7 +82,7 @@ public class AdminContorller {
 			@ApiResponse(responseCode = "200", description = "Teacher Is Updated"),
 			@ApiResponse(responseCode = "400", description = "invaild inputs", content = @Content(schema = @Schema(implementation = ErrorStructure.class))) })
 
-	@PutMapping("/{id}/teachers")
+	@PutMapping("/teachers/{id}")
 	public ResponseEntity<ResponseStructure<TeacherResponse>> updateTeacher(
 			@Valid @RequestBody TeacherUpdateRequest teacherReuest, @PathVariable("id") String id) {
 		logger.info("Updating Teacher Data  with ID: {}", id);
@@ -97,7 +97,7 @@ public class AdminContorller {
 			@ApiResponse(responseCode = "200", description = "Teacher is deleted"),
 			@ApiResponse(responseCode = "400", description = "invaild inputs", content = @Content(schema = @Schema(implementation = ErrorStructure.class))) })
 
-	@DeleteMapping("{id}/teachers")
+	@DeleteMapping("/teachers/{id}")
 	public ResponseEntity<SimpleResponseStructure> deleteTeacher(@PathVariable("id") String id) {
 
 		logger.info("Delete teacher with ID: {}", id);
@@ -125,7 +125,7 @@ public class AdminContorller {
 			@ApiResponse(responseCode = "200", description = "Student data found"),
 			@ApiResponse(responseCode = "400", description = "invaild inputs", content = @Content(schema = @Schema(implementation = ErrorStructure.class))) })
 
-	@GetMapping("/{sId}/students")
+	@GetMapping("/students/{sId}")
 	public ResponseEntity<ResponseStructure<StudentResponse>> getStudent(@PathVariable("sId") String sId) {
 		logger.info("Fetching Student with ID: {}", sId);
 		ResponseEntity<ResponseStructure<StudentResponse>> student = adminService.getStudent(sId);
@@ -138,7 +138,7 @@ public class AdminContorller {
 			@ApiResponse(responseCode = "200", description = "product is saved"),
 			@ApiResponse(responseCode = "400", description = "invaild inputs", content = @Content(schema = @Schema(implementation = ErrorStructure.class))) })
 
-	@PutMapping("/{sId}/students")
+	@PutMapping("/students/{sId}")
 	public ResponseEntity<ResponseStructure<StudentResponse>> updateStudent(
 			@Valid @RequestBody StudentUpdateRequest stuUpdateRequest, @PathVariable("sId") String sId) {
 		logger.info("Updating Student  Data with ID: {}", sId);
@@ -152,7 +152,7 @@ public class AdminContorller {
 			@ApiResponse(responseCode = "200", description = "Student data  is deleted"),
 			@ApiResponse(responseCode = "400", description = "invaild inputs", content = @Content(schema = @Schema(implementation = ErrorStructure.class))) })
 
-	@DeleteMapping("/{sId}/students")
+	@DeleteMapping("/students/{sId}")
 	public ResponseEntity<SimpleResponseStructure> deleteStudent(@PathVariable("sId") String sId) {
 		logger.info("Delete Studentwith ID: {}", sId);
 		ResponseEntity<SimpleResponseStructure> deleteStudent = adminService.deleteStudent(sId);
@@ -176,7 +176,7 @@ public class AdminContorller {
 			@ApiResponse(responseCode = "200", description = "Teacher  is added To Student"),
 			@ApiResponse(responseCode = "400", description = "invaild inputs", content = @Content(schema = @Schema(implementation = ErrorStructure.class))) })
 
-	@PostMapping("/{teacherId}/teachers/{sId}/students")
+	@PostMapping("/teachers/{teacherId}/students/{sId}")
 	public ResponseEntity<ResponseStructure<StudentResponse>> addTeacheToStudent(
 			@PathVariable("teacherId") String teacherId, @PathVariable("sId") String sId) {
 		logger.info("Add  teacher to Student with ID: {}", teacherId, sId);

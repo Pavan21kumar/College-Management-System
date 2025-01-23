@@ -153,7 +153,7 @@ public class AdminServiceImpl implements AdminService {
 			logger.error("Unauthorized user: {} attempted to update teacher", username);
 			throw new UnauthorizedException("Only Admin Can Access This Page");
 		}
-		return teacherRepo.findById(id).map(teacher -> {
+		return teacherRepo.findByIdAndRole(id, Role.TEACHER).map(teacher -> {
 			teacher = mapToUpdateTeacher(teacherReuest, teacher);
 
 			teacher = teacherRepo.save(teacher);
@@ -180,9 +180,9 @@ public class AdminServiceImpl implements AdminService {
 			logger.error("Unauthorized user: {} attempted to delete teacher", username);
 			throw new UnauthorizedException("Only Admin Can Access This Page");
 		}
-		return teacherRepo.findById(id).map(teacher -> {
+		return teacherRepo.findByIdAndRole(id, Role.TEACHER).map(teacher -> {
 
-			List<Student> students = studentRepo.findAllByTeacherId(teacher.getId());
+			List<Student> students = studentRepo.findAllByTeacherIdAndRole(teacher.getId(), Role.STUDENT);
 			if (!students.isEmpty()) {
 				students = removeTeacherInStudent(students);
 				studentRepo.saveAll(students);
@@ -206,6 +206,7 @@ public class AdminServiceImpl implements AdminService {
 		logger.info("Attempting to add a Student : {}", studentRequest);
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		if (!authentication.isAuthenticated()) {
+
 			logger.error("Unauthorized access attempt to add Student.");
 			throw new UserIsNotLoginException("user Is Not Login");
 		}
@@ -214,15 +215,18 @@ public class AdminServiceImpl implements AdminService {
 		logger.debug("Authenticated user: {}", username);
 		User user = userRepo.findByUsername(username).get();
 		if (!user.getRole().name().equals(Role.ADMIN.name())) {
+
 			logger.error("Unauthorized user: {} attempted to Add Studet", username);
 			throw new UnauthorizedException("Only Admin Can Access This Page");
 		}
 		if (studentRepo.existsByUsername(studentRequest.getEmail().split("@")[0])) {
+
 			logger.error("Unauthorized Operation: {} attempted to add Student ", username);
 			throw new StudentUsernameAllReadyPresentException("username AllReady Present give different username");
 		}
 		Student student = mapToStudent(studentRequest, new Student());
 		student = studentRepo.save(student);
+
 		logger.debug("Student data saved :", student);
 		return ResponseEntity.ok(studentResponseStructure.setStatusCode(HttpStatus.OK.value())
 				.setMessage("Student Added SuccessFully").setBody(teacherServiceImpl.mapToStudentResponse(student)));
@@ -230,22 +234,27 @@ public class AdminServiceImpl implements AdminService {
 
 	@Override
 	public ResponseEntity<ResponseStructure<StudentResponse>> getStudent(String sId) {
+
 		logger.info("Attempting to get a Student with Id: {}", sId);
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		if (!authentication.isAuthenticated()) {
+
 			logger.error("Unauthorized access attempt to get student.");
 			throw new UserIsNotLoginException("user Is Not Login");
 		}
 
 		String username = authentication.getName();
+
 		logger.debug("Authenticated user: {}", username);
 		User user = userRepo.findByUsername(username).get();
 		if (!user.getRole().name().equals(Role.ADMIN.name())) {
+
 			logger.error("Unauthorized user: {} attempted to get student", username);
 			throw new UnauthorizedException("Only Admin Can Access This Page");
 		}
-		return studentRepo.findById(sId).map(student -> {
+		return studentRepo.findByIdAndRole(sId, Role.STUDENT).map(student -> {
 			StudentResponse studentResponse = teacherServiceImpl.mapToStudentResponse(student);
+
 			logger.debug("teacher data found :", student);
 			return ResponseEntity.ok(studentResponseStructure.setStatusCode(HttpStatus.OK.value())
 					.setMessage("data Found").setBody(studentResponse));
@@ -257,7 +266,31 @@ public class AdminServiceImpl implements AdminService {
 	public ResponseEntity<ResponseStructure<StudentResponse>> updateStudent(
 			@Valid StudentUpdateRequest stuUpdateRequest, String sId) {
 
-		return teacherServiceImpl.updateStudents(stuUpdateRequest, sId);
+		logger.info("Attempting to update a Student with Id: {}", sId);
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if (!authentication.isAuthenticated()) {
+
+			logger.error("Unauthorized access attempt to update Student.");
+			throw new UserIsNotLoginException("user Is Not Login");
+		}
+
+		String username = authentication.getName();
+
+		logger.debug("Authenticated user: {}", username);
+		User user = userRepo.findByUsername(username).get();
+		if (!user.getRole().name().equals(Role.ADMIN.name())) {
+
+			logger.error("Unauthorized access attempt to update Student.");
+			throw new UnauthorizedException("Only Admin Can Access This Page");
+		}
+		return studentRepo.findByIdAndRole(sId, Role.STUDENT).map(student -> {
+
+			student = mapToStudent(stuUpdateRequest, student);
+			studentRepo.save(student);
+			logger.debug("Student data updated :", student);
+			return ResponseEntity.ok(studentResponseStructure.setStatusCode(HttpStatus.OK.value())
+					.setMessage("Data found ").setBody(teacherServiceImpl.mapToStudentResponses(student)));
+		}).orElseThrow(() -> new StudentNotFoundByIdException("stundet Not Found By Given Id or Invalid Id"));
 
 	}
 
@@ -313,9 +346,11 @@ public class AdminServiceImpl implements AdminService {
 
 	@Override
 	public ResponseEntity<ResponseStructure<StudentResponse>> addTeacherToStudent(String sId, String teacherId) {
+
 		logger.info("Attempting to add Teacher To  Student with Ids: {}", teacherId, sId);
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		if (!authentication.isAuthenticated()) {
+
 			logger.error("Unauthorized access attempt to  add Teacher To Students.");
 			throw new UserIsNotLoginException("user Is Not Login");
 		}
@@ -323,17 +358,19 @@ public class AdminServiceImpl implements AdminService {
 		String username = authentication.getName();
 		User user = userRepo.findByUsername(username).get();
 		if (!user.getRole().name().equals(Role.ADMIN.name())) {
+
 			logger.error("Unauthorized access attempt to  add Teacher To Students.");
 			throw new UnauthorizedException("Only Admin Can Access This Page");
 		}
 
-		return teacherRepo.findById(teacherId).map(teacher -> {
-			return studentRepo.findById(sId).map(student -> {
-				if (student.getTeacherId().isEmpty())
+		return teacherRepo.findByIdAndRole(teacherId, Role.TEACHER).map(teacher -> {
+			return studentRepo.findByIdAndRole(sId, Role.STUDENT).map(student -> {
+				if (student.getTeacherId() == null) {
 					student.setTeacherId(Arrays.asList(teacherId));
-				else
+				} else
 					student.getTeacherId().add(teacherId);
 				student = studentRepo.save(student);
+
 				logger.debug("Student data Updated :", student);
 				return ResponseEntity.ok(studentResponseStructure.setStatusCode(HttpStatus.OK.value())
 						.setMessage("data found").setBody(teacherServiceImpl.mapToStudentResponse(student)));
@@ -345,7 +382,7 @@ public class AdminServiceImpl implements AdminService {
 
 	private TeacherResponse maptoTeacherResponse(Teacher teacher) {
 		return TeacherResponse.builder().name(teacher.getName()).username(teacher.getUsername())
-				.subject(teacher.getSubject()).role(teacher.getRole()).build();
+				.subject(teacher.getSubject()).role(teacher.getRole()).teacherId(teacher.getId()).build();
 
 	}
 
@@ -369,13 +406,13 @@ public class AdminServiceImpl implements AdminService {
 
 	private Teacher mapToUpdateTeacher(TeacherUpdateRequest teacherReuest, Teacher teacher) {
 		teacher.setId(teacher.getId());
-		if (!teacherReuest.getName().isEmpty())
+		if (teacherReuest.getName() != null)
 			teacher.setName(teacherReuest.getName());
-		if (!teacherReuest.getEmail().isEmpty())
+		if (teacherReuest.getEmail() != null)
 			teacher.setUsername(teacherReuest.getEmail().split("@")[0]);
-		if (!teacherReuest.getPassword().isEmpty())
+		if (teacherReuest.getPassword() != null)
 			teacher.setPassword(teacherReuest.getPassword());
-		if (!teacherReuest.getSubject().isEmpty())
+		if (teacherReuest.getSubject() != null)
 			teacher.setSubject(teacherReuest.getSubject());
 
 		return teacher;
@@ -395,6 +432,22 @@ public class AdminServiceImpl implements AdminService {
 		student.setPassword(encoder.encode(studentRequest.getPassword()));
 		student.setMarks(Arrays.asList(studentRequest.getMarks()));
 
+		return student;
+
+	}
+
+	private Student mapToStudent(StudentUpdateRequest request, Student student) {
+		student.setId(student.getId());
+		if (request.getName() != null)
+			student.setName(request.getName());
+		if (request.getPassword() != null)
+			student.setPassword(request.getPassword());
+		if (request.getEmail() != null)
+			student.setUsername(request.getEmail());
+		if (request.getMarks() != 0)
+			student.setMarks(Arrays.asList(request.getMarks()));
+		if (request.getGrade() != 0)
+			student.setGrade(request.getGrade());
 		return student;
 
 	}
