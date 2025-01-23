@@ -51,12 +51,17 @@ public class SecurityConfig {
 	@Bean
 	@Order(2)
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		return http.csrf(csrf -> csrf.disable()) // Disable CSRF protection for Swagger UI
-				.authorizeHttpRequests(auth -> auth.requestMatchers("/user/register", "/user/login", "/v3/api-docs/**",
-						"/swagger-ui/**", "/swagger-ui.html").permitAll().anyRequest().authenticated())
-				.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.addFilterAt(new JwtFilter(jwtService, accessTokenRepo, refreshTokenRepo),
-						UsernamePasswordAuthenticationFilter.class)
+		return http.csrf(csrf -> csrf.disable()) // Disable CSRF protection
+				.authorizeHttpRequests(auth -> auth.requestMatchers("/user/register", "/user.login", "/swagger-ui/**", // Swagger
+																														// UI
+																														// resources
+						"/swagger-ui.html", // Swagger HTML
+						"/v3/api-docs/**" // OpenAPI docs
+				).permitAll() // Allow Swagger without authentication
+						.anyRequest().authenticated() // Protect other endpoints
+				).sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.addFilterBefore(new JwtFilter(jwtService, accessTokenRepo, refreshTokenRepo),
+						UsernamePasswordAuthenticationFilter.class) // Add JWT filter
 				.authenticationProvider(authenticationProvider()).build();
 	}
 
