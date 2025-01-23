@@ -13,7 +13,7 @@ import io.swagger.v3.oas.models.info.Info;
 public class ApplicationDoc {
 
 	Contact contact() {
-		return new Contact().name("pavan Kumar").url("https://leetcode.com/").email("budurupavankumar268@gmail.com");
+		return new Contact().name("pavan Kumar").email("budurupavankumar268@gmail.com");
 	}
 
 	@Bean
