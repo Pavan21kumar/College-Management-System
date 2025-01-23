@@ -2,6 +2,8 @@ package com.cms.util;
 
 import java.util.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -18,12 +20,15 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class FieldValidationExceptionHandling extends ResponseEntityExceptionHandler {
 
+	private static final Logger logger = LoggerFactory.getLogger(FieldValidationExceptionHandling.class);
+
 	private ErrorStructure<Map<String, String>> errorStructure;
 
 	@Override
 	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
 			HttpHeaders headers, HttpStatusCode status, WebRequest request) {
 		// TODO Auto-generated method stub
+		logger.error("MethodArgumentNotValidException occurred: {}", ex.getMessage(), ex);
 		Map<String, String> errors = new LinkedHashMap<>();
 		ex.getAllErrors().forEach(error -> {
 			errors.put(((FieldError) error).getField(), error.getDefaultMessage());

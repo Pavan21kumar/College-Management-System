@@ -1,5 +1,7 @@
 package com.cms.exceptionshandler;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -24,11 +26,13 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class AuthExceptionHandler {
 
+	private static final Logger logger = LoggerFactory.getLogger(AuthExceptionHandler.class);
 	private ErrorStructure<String> errorStructure;
 
 	@ExceptionHandler
 	public ResponseEntity<ErrorStructure<String>> handleAccessTockenExpairedException(AccessTokenExpireException ex) {
 
+		logger.error("AccessTokenExpireException occurred: {}", ex.getMessage(), ex);
 		return ResponseEntity.badRequest().body(errorStructure.setStatusCode(HttpStatus.BAD_REQUEST.value())
 				.setMessage(ex.getMessage()).setRootCouse("AccessTocken Is Expaired Please Refresh The Access Token"));
 	}
@@ -36,7 +40,7 @@ public class AuthExceptionHandler {
 	@ExceptionHandler
 	public ResponseEntity<ErrorStructure<String>> handleRefreshTockenExpairedException(
 			ReftreshTokenExpireException ex) {
-
+		logger.error("ReftreshTokenExpireException occurred: {}", ex.getMessage(), ex);
 		return ResponseEntity.badRequest().body(errorStructure.setStatusCode(HttpStatus.BAD_REQUEST.value())
 				.setMessage(ex.getMessage()).setRootCouse("RefreshTocken Is Expaired Please Login Again"));
 	}
@@ -44,7 +48,7 @@ public class AuthExceptionHandler {
 	@ExceptionHandler
 	public ResponseEntity<ErrorStructure<String>> handleUserIsAllReadyLoginExpairedException(
 			UserIsAllreadyLoginException ex) {
-
+		logger.error("UserIsAllreadyLoginException occurred: {}", ex.getMessage(), ex);
 		return ResponseEntity.badRequest().body(errorStructure.setStatusCode(HttpStatus.BAD_REQUEST.value())
 				.setMessage(ex.getMessage()).setRootCouse("User Is Allready Login ..."));
 	}
@@ -52,28 +56,28 @@ public class AuthExceptionHandler {
 	@ExceptionHandler
 	public ResponseEntity<ErrorStructure<String>> handleUserIsAllReadyRegisterExpairedException(
 			UserAllReadyRegisteredException ex) {
-
+		logger.error("UserAllReadyRegisteredException occurred: {}", ex.getMessage(), ex);
 		return ResponseEntity.badRequest().body(errorStructure.setStatusCode(HttpStatus.BAD_REQUEST.value())
 				.setMessage(ex.getMessage()).setRootCouse("User Is Allready Registered. please login ..."));
 	}
 
 	@ExceptionHandler
 	public ResponseEntity<ErrorStructure<String>> handleUserNotLoginExpairedException(UserIsNotLoginException ex) {
-
+		logger.error("UserIsNotLoginException occurred: {}", ex.getMessage(), ex);
 		return ResponseEntity.badRequest().body(errorStructure.setStatusCode(HttpStatus.BAD_REQUEST.value())
 				.setMessage(ex.getMessage()).setRootCouse("User Is Not Login ..."));
 	}
 
 	@ExceptionHandler
 	public ResponseEntity<ErrorStructure<String>> handleInvalidRoleException(InvalidRoleException ex) {
-
+		logger.error("InvalidRoleException occurred: {}", ex.getMessage(), ex);
 		return ResponseEntity.badRequest().body(errorStructure.setStatusCode(HttpStatus.BAD_REQUEST.value())
 				.setMessage(ex.getMessaString()).setRootCouse("Invalid Role Please choose Correct Role  ..."));
 	}
 
 	@ExceptionHandler
 	public ResponseEntity<ErrorStructure<String>> handleInvalidCredadentialException(InvalidCreadentialsException ex) {
-
+		logger.error("InvalidCreadentialsException occurred: {}", ex.getMessage(), ex);
 		return ResponseEntity.badRequest().body(errorStructure.setStatusCode(HttpStatus.BAD_REQUEST.value())
 				.setMessage(ex.getMessage()).setRootCouse("Invalid Details Please choose Correct details  ..."));
 	}
@@ -81,21 +85,21 @@ public class AuthExceptionHandler {
 	@ExceptionHandler
 	public ResponseEntity<ErrorStructure<String>> handleEmailAllReadyPresentException(
 			EmailAllReadyPresentexception ex) {
-
+		logger.error("EmailAllReadyPresentexception occurred: {}", ex.getMessage(), ex);
 		return ResponseEntity.badRequest().body(errorStructure.setStatusCode(HttpStatus.BAD_REQUEST.value())
 				.setMessage(ex.getMessage()).setRootCouse("Email  is  allready Present  ..."));
 	}
 
 	@ExceptionHandler
 	public ResponseEntity<ErrorStructure<String>> handleUnathorizedException(UnauthorizedException ex) {
-
+		logger.error("UnauthorizedException occurred: {}", ex.getMessage(), ex);
 		return ResponseEntity.badRequest().body(errorStructure.setStatusCode(HttpStatus.BAD_REQUEST.value())
 				.setMessage(ex.getMessage()).setRootCouse("Unathorzed for your Role  ..."));
 	}
 
 	@ExceptionHandler
 	public ResponseEntity<ErrorStructure<String>> handleUsernameNotFoundException(UsernameNotFoundException ex) {
-
+		logger.error("UsernameNotFoundException occurred: {}", ex.getMessage(), ex);
 		return ResponseEntity.badRequest()
 				.body(errorStructure.setStatusCode(HttpStatus.BAD_REQUEST.value()).setMessage(ex.getMessage())
 						.setRootCouse("Invalid UsernameDetails Please choose Correct details  ..."));
@@ -104,7 +108,7 @@ public class AuthExceptionHandler {
 	@ExceptionHandler
 	public ResponseEntity<ErrorStructure<String>> handlePleaseGiveRefreshAccessTokenRequest(
 			PleaseGiveRefreshAccessTokenRequest ex) {
-
+		logger.error("PleaseGiveRefreshAccessTokenRequest occurred: {}", ex.getMessage(), ex);
 		return ResponseEntity.badRequest().body(errorStructure.setStatusCode(HttpStatus.BAD_REQUEST.value())
 				.setMessage(ex.getMessage()).setRootCouse("AccessToken Expired please Refresh It  ..."));
 	}

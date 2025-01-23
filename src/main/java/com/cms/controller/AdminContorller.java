@@ -25,6 +25,7 @@ import com.cms.util.ResponseStructure;
 import com.cms.util.SimpleResponseStructure;
 
 import jakarta.validation.Valid;
+import jakarta.validation.Path.ReturnValueNode;
 import lombok.AllArgsConstructor;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -84,7 +85,12 @@ public class AdminContorller {
 	@PutMapping("/{id}/teachers")
 	public ResponseEntity<ResponseStructure<TeacherResponse>> updateTeacher(
 			@Valid @RequestBody TeacherUpdateRequest teacherReuest, @PathVariable("id") String id) {
-		return adminService.updateTeacher(teacherReuest, id);
+		logger.info("Updating Teacher Data  with ID: {}", id);
+		ResponseEntity<ResponseStructure<TeacherResponse>> updateTeacher = adminService.updateTeacher(teacherReuest,
+				id);
+		logger.info("Fetching Updated teacher with ID: {}", updateTeacher);
+		return updateTeacher;
+
 	}
 
 	@Operation(description = "the End point is used to delete the Teacher data", responses = {
@@ -94,7 +100,11 @@ public class AdminContorller {
 	@DeleteMapping("{id}/teachers")
 	public ResponseEntity<SimpleResponseStructure> deleteTeacher(@PathVariable("id") String id) {
 
-		return adminService.deleteTeacher(id);
+		logger.info("Delete teacher with ID: {}", id);
+		ResponseEntity<SimpleResponseStructure> deleteTeacher = adminService.deleteTeacher(id);
+		logger.info("Delete teacher with ID: {}", id);
+		return deleteTeacher;
+
 	}
 
 	@Operation(description = "the End point is used to save the Students data", responses = {
@@ -104,7 +114,11 @@ public class AdminContorller {
 	@PostMapping("/add-student")
 	public ResponseEntity<ResponseStructure<StudentResponse>> addStudent(
 			@Valid @RequestBody StudentRequest studentRequest) {
-		return adminService.addStudent(studentRequest);
+		logger.info("Addong  Student Data : {}", studentRequest);
+		ResponseEntity<ResponseStructure<StudentResponse>> addStudent = adminService.addStudent(studentRequest);
+		logger.info("Fetching StudentResponse : {}", addStudent);
+		return addStudent;
+
 	}
 
 	@Operation(description = "the End point is used to get the Student data", responses = {
@@ -113,7 +127,11 @@ public class AdminContorller {
 
 	@GetMapping("/{sId}/students")
 	public ResponseEntity<ResponseStructure<StudentResponse>> getStudent(@PathVariable("sId") String sId) {
-		return adminService.getStudent(sId);
+		logger.info("Fetching Student with ID: {}", sId);
+		ResponseEntity<ResponseStructure<StudentResponse>> student = adminService.getStudent(sId);
+		logger.info("Fetching StudentResponse with ID: {}", student);
+		return student;
+
 	}
 
 	@Operation(description = "the End point is used to save the Product data", responses = {
@@ -123,39 +141,49 @@ public class AdminContorller {
 	@PutMapping("/{sId}/students")
 	public ResponseEntity<ResponseStructure<StudentResponse>> updateStudent(
 			@Valid @RequestBody StudentUpdateRequest stuUpdateRequest, @PathVariable("sId") String sId) {
-
-		return adminService.updateStudent(stuUpdateRequest, sId);
+		logger.info("Updating Student  Data with ID: {}", sId);
+		ResponseEntity<ResponseStructure<StudentResponse>> updateStudent = adminService.updateStudent(stuUpdateRequest,
+				sId);
+		logger.info("Fetching Updated Student Data  : {}", updateStudent);
+		return updateStudent;
 	}
 
-	@Operation(description = "the End point is used to save the Product data", responses = {
-			@ApiResponse(responseCode = "200", description = "product is saved"),
+	@Operation(description = "the End point is used to Delete the Student data", responses = {
+			@ApiResponse(responseCode = "200", description = "Student data  is deleted"),
 			@ApiResponse(responseCode = "400", description = "invaild inputs", content = @Content(schema = @Schema(implementation = ErrorStructure.class))) })
 
 	@DeleteMapping("/{sId}/students")
 	public ResponseEntity<SimpleResponseStructure> deleteStudent(@PathVariable("sId") String sId) {
-
-		return adminService.deleteStudent(sId);
+		logger.info("Delete Studentwith ID: {}", sId);
+		ResponseEntity<SimpleResponseStructure> deleteStudent = adminService.deleteStudent(sId);
+		logger.info("Delete student with ID: {}", deleteStudent);
+		return deleteStudent;
 	}
 
-	@Operation(description = "the End point is used to save the Product data", responses = {
-			@ApiResponse(responseCode = "200", description = "product is saved"),
+	@Operation(description = "the End point is used to Get ALl Students ", responses = {
+			@ApiResponse(responseCode = "200", description = "Students data Found"),
 			@ApiResponse(responseCode = "400", description = "invaild inputs", content = @Content(schema = @Schema(implementation = ErrorStructure.class))) })
 
 	@GetMapping("/students")
 	public ResponseEntity<ResponseStructure<List<StudentResponse>>> getAllStudents() {
-
-		return adminService.getAllStudents();
+		logger.info("Fetching All Students : {}");
+		ResponseEntity<ResponseStructure<List<StudentResponse>>> allStudents = adminService.getAllStudents();
+		logger.info("Fetching ALl Students Responses : {}", allStudents);
+		return allStudents;
 	}
 
-	@Operation(description = "the End point is used to save the Product data", responses = {
-			@ApiResponse(responseCode = "200", description = "product is saved"),
+	@Operation(description = "the End point is used to Add Teacher To Student ", responses = {
+			@ApiResponse(responseCode = "200", description = "Teacher  is added To Student"),
 			@ApiResponse(responseCode = "400", description = "invaild inputs", content = @Content(schema = @Schema(implementation = ErrorStructure.class))) })
 
 	@PostMapping("/{teacherId}/teachers/{sId}/students")
 	public ResponseEntity<ResponseStructure<StudentResponse>> addTeacheToStudent(
 			@PathVariable("teacherId") String teacherId, @PathVariable("sId") String sId) {
-
-		return adminService.addTeacherToStudent(sId, teacherId);
+		logger.info("Add  teacher to Student with ID: {}", teacherId, sId);
+		ResponseEntity<ResponseStructure<StudentResponse>> addTeacherToStudent = adminService.addTeacherToStudent(sId,
+				teacherId);
+		logger.info("Fetching Student Response  : {}", addTeacherToStudent);
+		return addTeacherToStudent;
 	}
 
 }
