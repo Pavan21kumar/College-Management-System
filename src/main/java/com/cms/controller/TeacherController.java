@@ -34,14 +34,14 @@ public class TeacherController {
 
 	}
 
-	@GetMapping("/{sId}/students")
+	@GetMapping("/students/{sId}")
 	public ResponseEntity<ResponseStructure<StudentResponse>> getStudent(@PathVariable("sId") String sId) {
 		return teacherService.getStudent(sId);
 	}
 
-	@PutMapping("/{sId}/students")
-	public ResponseEntity<ResponseStructure<StudentResponse>> updateStudent(@Valid @RequestBody StudentUpdateRequest request,
-			@PathVariable("sId") String sId) {
+	@PutMapping("/students/{sId}")
+	public ResponseEntity<ResponseStructure<StudentResponse>> updateStudent(
+			@Valid @RequestBody StudentUpdateRequest request, @PathVariable("sId") String sId) {
 		return teacherService.updateStudents(request, sId);
 	}
 

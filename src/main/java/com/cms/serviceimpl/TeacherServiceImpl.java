@@ -76,7 +76,7 @@ public class TeacherServiceImpl implements TeacherService {
 			throw new UserIsNotLoginException("user Is Not Login");
 		}
 
-		return studentRepo.findById(sId).map(student -> {
+		return studentRepo.findByIdAndRole(sId, Role.STUDENT).map(student -> {
 			StudentResponse response = mapToStudentResponse(student);
 			logger.debug("Student data found :", student);
 			return ResponseEntity.ok(studnetResponseStructure.setStatusCode(HttpStatus.OK.value())
@@ -94,17 +94,19 @@ public class TeacherServiceImpl implements TeacherService {
 		}
 
 		String username = authentication.getName();
+
 		logger.debug("Authenticated user: {}", username);
 		User user = userRepo.findByUsername(username).get();
-		if (!user.getRole().name().equals(Role.TEACHER.name())) {
+		if (!user.getRole().name().equals(Role.TEACHER.name()) || (!user.getRole().name().equals(Role.ADMIN.name()))) {
+
 			logger.error("Unauthorized access attempt to update Student.");
 			throw new UnauthorizedException("Only Admin Can Access This Page");
 		}
-
-		return studentRepo.findById(sId).map(student -> {
+		return studentRepo.findByIdAndRole(sId, Role.STUDENT).map(student -> {
 
 			student = mapToStudent(student, request);
 			studentRepo.save(student);
+
 			logger.debug("Student data updated :", student);
 			return ResponseEntity.ok(studnetResponseStructure.setStatusCode(HttpStatus.OK.value())
 					.setMessage("Data found ").setBody(mapToStudentResponses(student)));
@@ -113,23 +115,28 @@ public class TeacherServiceImpl implements TeacherService {
 
 	@Override
 	public ResponseEntity<ResponseStructure<List<StudentResponse>>> getALlStudentsByteacher() {
+
 		logger.info("Attempting to get all Student : {}");
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		if (!authentication.isAuthenticated()) {
+
 			logger.error("Unauthorized access attempt to getALl Students.");
 			throw new UserIsNotLoginException("user Is Not Login");
 		}
 
 		String username = authentication.getName();
+
 		logger.debug("Authenticated user: {}", username);
 		User user = userRepo.findByUsername(username).get();
 		if (!user.getRole().name().equals(Role.TEACHER.name())) {
+
 			logger.error("Unauthorized user: {} attempted to get All Students", username);
 			throw new UnauthorizedException("Only  and Teachers Can Access This Page");
 		}
 		return teacherRepo.findByUsername(username).map(teacher -> {
 			List<Student> students = studentRepo.findAllByTeacherId(teacher.getId());
-			if (students.isEmpty()) {
+			if (students == null) {
+
 				logger.error("No Students Found");
 				throw new NoStudentsFoundException("no Students Found");
 			}
@@ -196,7 +203,7 @@ public class TeacherServiceImpl implements TeacherService {
 
 	public StudentResponse mapToStudentResponse(Student student) {
 
-		return StudentResponse.builder().name(student.getName()).usernmae(student.getUsername())
+		return StudentResponse.builder().sId(student.getId()).name(student.getName()).usernmae(student.getUsername())
 				.marks(student.getMarks()).grade(student.getGrade()).build();
 	}
 

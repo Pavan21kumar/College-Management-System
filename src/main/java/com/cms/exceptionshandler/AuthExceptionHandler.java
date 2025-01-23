@@ -92,7 +92,7 @@ public class AuthExceptionHandler {
 
 	@ExceptionHandler
 	public ResponseEntity<ErrorStructure<String>> handleUnathorizedException(UnauthorizedException ex) {
-		logger.error("UnauthorizedException occurred: {}", ex.getMessage(), ex);
+		logger.error("UnauthorizedException occurred: {}", ex.getMessage());
 		return ResponseEntity.badRequest().body(errorStructure.setStatusCode(HttpStatus.BAD_REQUEST.value())
 				.setMessage(ex.getMessage()).setRootCouse("Unathorzed for your Role  ..."));
 	}
