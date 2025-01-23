@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -35,7 +37,7 @@ import lombok.AllArgsConstructor;
 @Service
 @AllArgsConstructor
 public class TeacherServiceImpl implements TeacherService {
-
+	private static final Logger logger = LoggerFactory.getLogger(TeacherServiceImpl.class);
 	private StudentRepository studentRepo;
 	private TeacherRepository teacherRepo;
 	private PasswordEncoder encoder;
@@ -45,22 +47,99 @@ public class TeacherServiceImpl implements TeacherService {
 
 	@Override
 	public ResponseEntity<ResponseStructure<List<StudentResponse>>> addStudent(List<StudentRequest> studentRequest) {
-		// TODO Auto-generated method stub
+		logger.info("Attempting to Add a Student : {}", studentRequest);
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if (!authentication.isAuthenticated())
+		if (!authentication.isAuthenticated()) {
+			logger.error("Unauthorized access attempt to add Student .");
 			throw new UserIsNotLoginException("user Is Not Login");
+		}
 
 		String username = authentication.getName();
+		logger.debug("Authenticated user: {}", username);
 		Teacher teacher = teacherRepo.findByUsername(username).get();
 
 		List<Student> students = mapToStudents(studentRequest, teacher.getId());
 
 		studentRepo.saveAll(students);
+		logger.debug("Students data saved :", students);
 		return ResponseEntity.ok(studentsResponses.setStatusCode(HttpStatus.OK.value()).setMessage("Students are Added")
 				.setBody(mapToStudentResponses(students)));
 
 	}
 
+	@Override
+	public ResponseEntity<ResponseStructure<StudentResponse>> getStudent(String sId) {
+		logger.info("Attempting to get a Student with Id: {}", sId);
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if (!authentication.isAuthenticated()) {
+			logger.error("Unauthorized access attempt to get Student.");
+			throw new UserIsNotLoginException("user Is Not Login");
+		}
+
+		return studentRepo.findById(sId).map(student -> {
+			StudentResponse response = mapToStudentResponse(student);
+			logger.debug("Student data found :", student);
+			return ResponseEntity.ok(studnetResponseStructure.setStatusCode(HttpStatus.OK.value())
+					.setMessage("data Found").setBody(response));
+		}).orElseThrow(() -> new StudentNotFoundByIdException("Student Not Found By Giove Id Or Invalid Id"));
+	}
+
+	@Override
+	public ResponseEntity<ResponseStructure<StudentResponse>> updateStudents(StudentUpdateRequest request, String sId) {
+		logger.info("Attempting to update a Student with Id: {}", sId);
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if (!authentication.isAuthenticated()) {
+			logger.error("Unauthorized access attempt to update Student.");
+			throw new UserIsNotLoginException("user Is Not Login");
+		}
+
+		String username = authentication.getName();
+		logger.debug("Authenticated user: {}", username);
+		User user = userRepo.findByUsername(username).get();
+		if (!user.getRole().name().equals(Role.TEACHER.name())) {
+			logger.error("Unauthorized access attempt to update Student.");
+			throw new UnauthorizedException("Only Admin Can Access This Page");
+		}
+
+		return studentRepo.findById(sId).map(student -> {
+
+			student = mapToStudent(student, request);
+			studentRepo.save(student);
+			logger.debug("Student data updated :", student);
+			return ResponseEntity.ok(studnetResponseStructure.setStatusCode(HttpStatus.OK.value())
+					.setMessage("Data found ").setBody(mapToStudentResponses(student)));
+		}).orElseThrow(() -> new StudentNotFoundByIdException("stundet Not Found By Given Id or Invalid Id"));
+	}
+
+	@Override
+	public ResponseEntity<ResponseStructure<List<StudentResponse>>> getALlStudentsByteacher() {
+		logger.info("Attempting to get all Student : {}");
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if (!authentication.isAuthenticated()) {
+			logger.error("Unauthorized access attempt to getALl Students.");
+			throw new UserIsNotLoginException("user Is Not Login");
+		}
+
+		String username = authentication.getName();
+		logger.debug("Authenticated user: {}", username);
+		User user = userRepo.findByUsername(username).get();
+		if (!user.getRole().name().equals(Role.TEACHER.name())) {
+			logger.error("Unauthorized user: {} attempted to get All Students", username);
+			throw new UnauthorizedException("Only  and Teachers Can Access This Page");
+		}
+		return teacherRepo.findByUsername(username).map(teacher -> {
+			List<Student> students = studentRepo.findAllByTeacherId(teacher.getId());
+			if (students.isEmpty()) {
+				logger.error("No Students Found");
+				throw new NoStudentsFoundException("no Students Found");
+			}
+			return ResponseEntity.ok(studentsResponses.setStatusCode(HttpStatus.OK.value()).setMessage("data Found")
+					.setBody(mapToStudentResponses(students)));
+		}).get();
+
+	}
+
+	// *************** Helper Methods ***************
 	public List<StudentResponse> mapToStudentResponses(List<Student> students) {
 		List<StudentResponse> studentResponses = new ArrayList<>();
 		for (Student s : students) {
@@ -99,45 +178,6 @@ public class TeacherServiceImpl implements TeacherService {
 		return student;
 	}
 
-	@Override
-	public ResponseEntity<ResponseStructure<StudentResponse>> getStudent(String sId) {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if (!authentication.isAuthenticated())
-			throw new UserIsNotLoginException("user Is Not Login");
-
-		return studentRepo.findById(sId).map(student -> {
-			StudentResponse response = mapToStudentResponse(student);
-			return ResponseEntity.ok(studnetResponseStructure.setStatusCode(HttpStatus.OK.value())
-					.setMessage("data Found").setBody(response));
-		}).orElseThrow(() -> new StudentNotFoundByIdException("Student Not Found By Giove Id Or Invalid Id"));
-	}
-
-	public StudentResponse mapToStudentResponse(Student student) {
-
-		return StudentResponse.builder().name(student.getName()).usernmae(student.getUsername())
-				.marks(student.getMarks()).grade(student.getGrade()).build();
-	}
-
-	@Override
-	public ResponseEntity<ResponseStructure<StudentResponse>> updateStudents(StudentUpdateRequest request, String sId) {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if (!authentication.isAuthenticated())
-			throw new UserIsNotLoginException("user Is Not Login");
-
-		String username = authentication.getName();
-		User user = userRepo.findByUsername(username).get();
-		if (!user.getRole().name().equals(Role.TEACHER.name()))
-			throw new UnauthorizedException("Only Admin Can Access This Page");
-
-		return studentRepo.findById(sId).map(student -> {
-
-			student = mapToStudent(student, request);
-			studentRepo.save(student);
-			return ResponseEntity.ok(studnetResponseStructure.setStatusCode(HttpStatus.OK.value())
-					.setMessage("Data found ").setBody(mapToStudentResponses(student)));
-		}).orElseThrow(() -> new StudentNotFoundByIdException("stundet Not Found By Given Id or Invalid Id"));
-	}
-
 	private Student mapToStudent(Student student, StudentUpdateRequest request) {
 
 		student.setId(student.getId());
@@ -154,26 +194,10 @@ public class TeacherServiceImpl implements TeacherService {
 		return student;
 	}
 
-	@Override
-	public ResponseEntity<ResponseStructure<List<StudentResponse>>> getALlStudentsByteacher() {
+	public StudentResponse mapToStudentResponse(Student student) {
 
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if (!authentication.isAuthenticated())
-			throw new UserIsNotLoginException("user Is Not Login");
-
-		String username = authentication.getName();
-		User user = userRepo.findByUsername(username).get();
-		if (!user.getRole().name().equals(Role.TEACHER.name()))
-			throw new UnauthorizedException("Only Admin and Teachers Can Access This Page");
-
-		return teacherRepo.findByUsername(username).map(teacher -> {
-			List<Student> students = studentRepo.findAllByTeacherId(teacher.getId());
-			if (students.isEmpty())
-				throw new NoStudentsFoundException("no Students Found");
-			return ResponseEntity.ok(studentsResponses.setStatusCode(HttpStatus.OK.value()).setMessage("data Found")
-					.setBody(mapToStudentResponses(students)));
-		}).get();
-
+		return StudentResponse.builder().name(student.getName()).usernmae(student.getUsername())
+				.marks(student.getMarks()).grade(student.getGrade()).build();
 	}
 
 }

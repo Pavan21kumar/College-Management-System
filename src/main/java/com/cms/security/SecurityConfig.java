@@ -37,49 +37,40 @@ public class SecurityConfig {
 
 	@Bean
 	PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder(12);// more secured and more use and 12 times hashing is basic secure
+		return new BCryptPasswordEncoder(12);
 	}
 
 	@Bean
 	AuthenticationProvider authenticationProvider() {
 		DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
 		provider.setPasswordEncoder(passwordEncoder());
-
 		provider.setUserDetailsService(userDetailservice);
 		return provider;
-
 	}
 
 	@Bean
-//	@Order(2)
+	@Order(2)
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		System.out.println("im in Main  filter*****************************");
-		return http.csrf(csrf -> csrf.disable())
+		return http.csrf(csrf -> csrf.disable()) // Disable CSRF protection for Swagger UI
 				.authorizeHttpRequests(auth -> auth.requestMatchers("/user/register", "/user/login", "/v3/api-docs/**",
 						"/swagger-ui/**", "/swagger-ui.html").permitAll().anyRequest().authenticated())
-				.sessionManagement(management -> {
-					management.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-				})
+				.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.addFilterAt(new JwtFilter(jwtService, accessTokenRepo, refreshTokenRepo),
 						UsernamePasswordAuthenticationFilter.class)
 				.authenticationProvider(authenticationProvider()).build();
 	}
 
-//	@Bean
-//	@Order(1)
-//	SecurityFilterChain refreshFilterChain(HttpSecurity http) throws Exception {
-//
-//		System.out.println("im in refresh filter*****************************");
-//		return http.csrf(csrf -> csrf.disable())
-//				.securityMatchers(matcher -> matcher.requestMatchers("/api/v1/login/refresh/**"))
-//				.authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())
-//				.sessionManagement(session -> {
-//					session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-//				})
-//				.addFilterBefore(new RefreshFilter(jwtService, refreshTokenRepo),
-//						UsernamePasswordAuthenticationFilter.class)
-//				.authenticationProvider(authenticationProvider()).build();
-//	}
+	@Bean
+	@Order(1)
+	SecurityFilterChain refreshFilterChain(HttpSecurity http) throws Exception {
+		return http.csrf(csrf -> csrf.disable())
+				.securityMatchers(matcher -> matcher.requestMatchers("/login/refresh/**"))
+				.authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())
+				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.addFilterBefore(new RefreshFilter(jwtService, refreshTokenRepo),
+						UsernamePasswordAuthenticationFilter.class)
+				.authenticationProvider(authenticationProvider()).build();
+	}
 
 	@Bean
 	AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
