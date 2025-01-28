@@ -18,9 +18,5 @@ public class StudentRequest {
 	@Size(min = 8, max = 16)
 	@Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,20}$", message = "give propere password")
 	private String password;
-	@NotNull
-	private int marks;
-	@NotNull
-	private double grade;
 
 }

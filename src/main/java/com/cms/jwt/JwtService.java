@@ -41,6 +41,7 @@ public class JwtService {
 	public String generateAccessToken(String userName, String role) {
 		return generateToken(accesExpairation, userName, role);
 	}
+	
 
 	public String generateRefreshToken(String userName, String role) {
 		System.out.println(LocalDateTime.now().plusSeconds(refreshExpairation / 1000));

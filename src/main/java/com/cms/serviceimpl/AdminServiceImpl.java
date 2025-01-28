@@ -149,10 +149,7 @@ public class AdminServiceImpl implements AdminService {
 		String username = authentication.getName();
 		logger.debug("Authenticated user: {}", username);
 		User user = userRepo.findByUsername(username).get();
-		if (!user.getRole().name().equals(Role.ADMIN.name())) {
-			logger.error("Unauthorized user: {} attempted to update teacher", username);
-			throw new UnauthorizedException("Only Admin Can Access This Page");
-		}
+
 		return teacherRepo.findByIdAndRole(id, Role.TEACHER).map(teacher -> {
 			teacher = mapToUpdateTeacher(teacherReuest, teacher);
 
@@ -411,7 +408,7 @@ public class AdminServiceImpl implements AdminService {
 		if (teacherReuest.getEmail() != null)
 			teacher.setUsername(teacherReuest.getEmail().split("@")[0]);
 		if (teacherReuest.getPassword() != null)
-			teacher.setPassword(teacherReuest.getPassword());
+			teacher.setPassword(encoder.encode(teacherReuest.getPassword()));
 		if (teacherReuest.getSubject() != null)
 			teacher.setSubject(teacherReuest.getSubject());
 
@@ -430,7 +427,6 @@ public class AdminServiceImpl implements AdminService {
 		student.setUsername(studentRequest.getEmail().split("@")[0]);
 		student.setRole(Role.STUDENT);
 		student.setPassword(encoder.encode(studentRequest.getPassword()));
-		student.setMarks(Arrays.asList(studentRequest.getMarks()));
 
 		return student;
 
@@ -444,8 +440,13 @@ public class AdminServiceImpl implements AdminService {
 			student.setPassword(request.getPassword());
 		if (request.getEmail() != null)
 			student.setUsername(request.getEmail());
-		if (request.getMarks() != 0)
-			student.setMarks(Arrays.asList(request.getMarks()));
+		if (request.getMarks() != 0) {
+			if (student.getMarks() != null) {
+				student.getMarks().add(request.getMarks());
+			} else {
+				student.setMarks(Arrays.asList(request.getMarks()));
+			}
+		}
 		if (request.getGrade() != 0)
 			student.setGrade(request.getGrade());
 		return student;
