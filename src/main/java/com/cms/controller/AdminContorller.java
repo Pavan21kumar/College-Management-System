@@ -5,6 +5,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,7 +35,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/cms/admin")
+@RequestMapping("/cms")
 public class AdminContorller {
 
 	private static final Logger logger = LoggerFactory.getLogger(AdminContorller.class); // Logger instance
@@ -42,8 +43,10 @@ public class AdminContorller {
 
 	@Operation(description = "the End point is used to save the Teacher data", responses = {
 			@ApiResponse(responseCode = "200", description = "Teacher is saved"),
-			@ApiResponse(responseCode = "400", description = "invaild inputs", content = @Content(schema = @Schema(implementation = ErrorStructure.class))) })
-	@PostMapping("/add-teacher")
+			@ApiResponse(responseCode = "400", description = "invaild inputs", content = @Content(schema = @Schema(implementation = ErrorStructure.class))),
+			@ApiResponse(responseCode = "403", description = "Access denied or forbidden.", content = @Content(schema = @Schema(implementation = ErrorStructure.class))) })
+	@PreAuthorize("hasRole('ADMIN')")
+	@PostMapping("/admin/add-teacher")
 	public ResponseEntity<ResponseStructure<TeacherResponse>> addTeacher(
 			@Valid @RequestBody TeacherReuest teacherRequest) {
 		logger.info("Fetching teacher with ID: {}", teacherRequest);
@@ -54,9 +57,10 @@ public class AdminContorller {
 
 	@Operation(description = "the End point is used to get the Teacher data", responses = {
 			@ApiResponse(responseCode = "200", description = "Teachre data Found"),
-			@ApiResponse(responseCode = "400", description = "invaild inputs", content = @Content(schema = @Schema(implementation = ErrorStructure.class))) })
-
-	@GetMapping("/teachers/{id}")
+			@ApiResponse(responseCode = "400", description = "invaild inputs", content = @Content(schema = @Schema(implementation = ErrorStructure.class))),
+			@ApiResponse(responseCode = "403", description = "Access denied or forbidden.", content = @Content(schema = @Schema(implementation = ErrorStructure.class))) })
+	@PreAuthorize("hasAuthority('ADMIN')")
+	@GetMapping("/admin/teachers/{id}")
 	public ResponseEntity<ResponseStructure<TeacherResponse>> getTeacherById(@PathVariable("id") String id) {
 		logger.info("Fetching teacher with ID: {}", id);
 		ResponseEntity<ResponseStructure<TeacherResponse>> response = adminService.getTeacherById(id);
@@ -66,9 +70,10 @@ public class AdminContorller {
 
 	@Operation(description = "the End point is used to get ALl Teachres  data", responses = {
 			@ApiResponse(responseCode = "200", description = "Teachers data Found"),
-			@ApiResponse(responseCode = "400", description = "invaild inputs", content = @Content(schema = @Schema(implementation = ErrorStructure.class))) })
-
-	@GetMapping("teachers")
+			@ApiResponse(responseCode = "400", description = "invaild inputs", content = @Content(schema = @Schema(implementation = ErrorStructure.class))),
+			@ApiResponse(responseCode = "403", description = "Access denied or forbidden.", content = @Content(schema = @Schema(implementation = ErrorStructure.class))) })
+	@PreAuthorize("hasAuthority('ADMIN')")
+	@GetMapping("/admin/teachers")
 	public ResponseEntity<ResponseStructure<List<TeacherResponse>>> getAllTeachers() {
 
 		logger.info("Fetching All Teachers : {}");
@@ -80,11 +85,13 @@ public class AdminContorller {
 
 	@Operation(description = "the End point is used to Update the Teacher data", responses = {
 			@ApiResponse(responseCode = "200", description = "Teacher Is Updated"),
-			@ApiResponse(responseCode = "400", description = "invaild inputs", content = @Content(schema = @Schema(implementation = ErrorStructure.class))) })
-
-	@PutMapping("/teachers/{id}")
+			@ApiResponse(responseCode = "400", description = "invaild inputs", content = @Content(schema = @Schema(implementation = ErrorStructure.class))),
+			@ApiResponse(responseCode = "403", description = "Access denied or forbidden.", content = @Content(schema = @Schema(implementation = ErrorStructure.class))) })
+	@PreAuthorize("hasAuthority('ADMIN')")
+	@PutMapping("/admin/teachers/{id}")
 	public ResponseEntity<ResponseStructure<TeacherResponse>> updateTeacher(
 			@Valid @RequestBody TeacherUpdateRequest teacherReuest, @PathVariable("id") String id) {
+		System.out.println("enter the method");
 		logger.info("Updating Teacher Data  with ID: {}", id);
 		ResponseEntity<ResponseStructure<TeacherResponse>> updateTeacher = adminService.updateTeacher(teacherReuest,
 				id);
@@ -95,9 +102,10 @@ public class AdminContorller {
 
 	@Operation(description = "the End point is used to delete the Teacher data", responses = {
 			@ApiResponse(responseCode = "200", description = "Teacher is deleted"),
-			@ApiResponse(responseCode = "400", description = "invaild inputs", content = @Content(schema = @Schema(implementation = ErrorStructure.class))) })
-
-	@DeleteMapping("/teachers/{id}")
+			@ApiResponse(responseCode = "400", description = "invaild inputs", content = @Content(schema = @Schema(implementation = ErrorStructure.class))),
+			@ApiResponse(responseCode = "403", description = "Access denied or forbidden.", content = @Content(schema = @Schema(implementation = ErrorStructure.class))) })
+	@PreAuthorize("hasAuthority('ADMIN')")
+	@DeleteMapping("/admin/teachers/{id}")
 	public ResponseEntity<SimpleResponseStructure> deleteTeacher(@PathVariable("id") String id) {
 
 		logger.info("Delete teacher with ID: {}", id);
@@ -109,9 +117,10 @@ public class AdminContorller {
 
 	@Operation(description = "the End point is used to save the Students data", responses = {
 			@ApiResponse(responseCode = "200", description = "Student is saved"),
-			@ApiResponse(responseCode = "400", description = "invaild inputs", content = @Content(schema = @Schema(implementation = ErrorStructure.class))) })
-
-	@PostMapping("/add-student")
+			@ApiResponse(responseCode = "400", description = "invaild inputs", content = @Content(schema = @Schema(implementation = ErrorStructure.class))),
+			@ApiResponse(responseCode = "403", description = "Access denied or forbidden.", content = @Content(schema = @Schema(implementation = ErrorStructure.class))) })
+	@PreAuthorize("hasAuthority('ADMIN')")
+	@PostMapping("/admin/add-student")
 	public ResponseEntity<ResponseStructure<StudentResponse>> addStudent(
 			@Valid @RequestBody StudentRequest studentRequest) {
 		logger.info("Addong  Student Data : {}", studentRequest);
@@ -123,9 +132,10 @@ public class AdminContorller {
 
 	@Operation(description = "the End point is used to get the Student data", responses = {
 			@ApiResponse(responseCode = "200", description = "Student data found"),
-			@ApiResponse(responseCode = "400", description = "invaild inputs", content = @Content(schema = @Schema(implementation = ErrorStructure.class))) })
-
-	@GetMapping("/students/{sId}")
+			@ApiResponse(responseCode = "400", description = "invaild inputs", content = @Content(schema = @Schema(implementation = ErrorStructure.class))),
+			@ApiResponse(responseCode = "403", description = "Access denied or forbidden.", content = @Content(schema = @Schema(implementation = ErrorStructure.class))) })
+	@PreAuthorize("hasAuthority('ADMIN')")
+	@GetMapping("/admin/students/{sId}")
 	public ResponseEntity<ResponseStructure<StudentResponse>> getStudent(@PathVariable("sId") String sId) {
 		logger.info("Fetching Student with ID: {}", sId);
 		ResponseEntity<ResponseStructure<StudentResponse>> student = adminService.getStudent(sId);
@@ -136,9 +146,10 @@ public class AdminContorller {
 
 	@Operation(description = "the End point is used to save the Product data", responses = {
 			@ApiResponse(responseCode = "200", description = "product is saved"),
-			@ApiResponse(responseCode = "400", description = "invaild inputs", content = @Content(schema = @Schema(implementation = ErrorStructure.class))) })
-
-	@PutMapping("/students/{sId}")
+			@ApiResponse(responseCode = "400", description = "invaild inputs", content = @Content(schema = @Schema(implementation = ErrorStructure.class))),
+			@ApiResponse(responseCode = "403", description = "Access denied or forbidden.", content = @Content(schema = @Schema(implementation = ErrorStructure.class))) })
+	@PreAuthorize("hasAuthority('ADMIN')")
+	@PutMapping("/admin/students/{sId}")
 	public ResponseEntity<ResponseStructure<StudentResponse>> updateStudent(
 			@Valid @RequestBody StudentUpdateRequest stuUpdateRequest, @PathVariable("sId") String sId) {
 		logger.info("Updating Student  Data with ID: {}", sId);
@@ -150,9 +161,10 @@ public class AdminContorller {
 
 	@Operation(description = "the End point is used to Delete the Student data", responses = {
 			@ApiResponse(responseCode = "200", description = "Student data  is deleted"),
-			@ApiResponse(responseCode = "400", description = "invaild inputs", content = @Content(schema = @Schema(implementation = ErrorStructure.class))) })
-
-	@DeleteMapping("/students/{sId}")
+			@ApiResponse(responseCode = "400", description = "invaild inputs", content = @Content(schema = @Schema(implementation = ErrorStructure.class))),
+			@ApiResponse(responseCode = "403", description = "Access denied or forbidden.", content = @Content(schema = @Schema(implementation = ErrorStructure.class))) })
+	@PreAuthorize("hasAuthority('ADMIN')")
+	@DeleteMapping("/admin/students/{sId}")
 	public ResponseEntity<SimpleResponseStructure> deleteStudent(@PathVariable("sId") String sId) {
 		logger.info("Delete Studentwith ID: {}", sId);
 		ResponseEntity<SimpleResponseStructure> deleteStudent = adminService.deleteStudent(sId);
@@ -162,9 +174,11 @@ public class AdminContorller {
 
 	@Operation(description = "the End point is used to Get ALl Students ", responses = {
 			@ApiResponse(responseCode = "200", description = "Students data Found"),
-			@ApiResponse(responseCode = "400", description = "invaild inputs", content = @Content(schema = @Schema(implementation = ErrorStructure.class))) })
+			@ApiResponse(responseCode = "400", description = "invaild inputs", content = @Content(schema = @Schema(implementation = ErrorStructure.class))),
+			@ApiResponse(responseCode = "403", description = "Access denied or forbidden.", content = @Content(schema = @Schema(implementation = ErrorStructure.class))) })
 
-	@GetMapping("/students")
+	@PreAuthorize("hasAuthority('ADMIN')")
+	@GetMapping("/admin/students")
 	public ResponseEntity<ResponseStructure<List<StudentResponse>>> getAllStudents() {
 		logger.info("Fetching All Students : {}");
 		ResponseEntity<ResponseStructure<List<StudentResponse>>> allStudents = adminService.getAllStudents();
@@ -174,9 +188,10 @@ public class AdminContorller {
 
 	@Operation(description = "the End point is used to Add Teacher To Student ", responses = {
 			@ApiResponse(responseCode = "200", description = "Teacher  is added To Student"),
-			@ApiResponse(responseCode = "400", description = "invaild inputs", content = @Content(schema = @Schema(implementation = ErrorStructure.class))) })
-
-	@PostMapping("/teachers/{teacherId}/students/{sId}")
+			@ApiResponse(responseCode = "400", description = "invaild inputs", content = @Content(schema = @Schema(implementation = ErrorStructure.class))),
+			@ApiResponse(responseCode = "403", description = "Access denied or forbidden.", content = @Content(schema = @Schema(implementation = ErrorStructure.class))) })
+	@PreAuthorize("hasAuthority('ADMIN')")
+	@PostMapping("/admin/teachers/{teacherId}/students/{sId}")
 	public ResponseEntity<ResponseStructure<StudentResponse>> addTeacheToStudent(
 			@PathVariable("teacherId") String teacherId, @PathVariable("sId") String sId) {
 		logger.info("Add  teacher to Student with ID: {}", teacherId, sId);

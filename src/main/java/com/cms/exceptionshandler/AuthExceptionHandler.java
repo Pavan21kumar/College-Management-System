@@ -8,9 +8,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.cms.exceptions.AccessTokenExpireException;
+import com.cms.exceptions.CustomAccessDeniedException;
 import com.cms.exceptions.EmailAllReadyPresentexception;
 import com.cms.exceptions.InvalidCreadentialsException;
 import com.cms.exceptions.InvalidRoleException;
+import com.cms.exceptions.PasswordNotValidException;
 import com.cms.exceptions.PleaseGiveRefreshAccessTokenRequest;
 import com.cms.exceptions.ReftreshTokenExpireException;
 import com.cms.exceptions.UnauthorizedException;
@@ -111,6 +113,32 @@ public class AuthExceptionHandler {
 		logger.error("PleaseGiveRefreshAccessTokenRequest occurred: {}", ex.getMessage(), ex);
 		return ResponseEntity.badRequest().body(errorStructure.setStatusCode(HttpStatus.BAD_REQUEST.value())
 				.setMessage(ex.getMessage()).setRootCouse("AccessToken Expired please Refresh It  ..."));
+	}
+
+	@ExceptionHandler
+	public ResponseEntity<ErrorStructure<String>> handlePasswordNotValidException(PasswordNotValidException ex) {
+		logger.error("PasswordNotValidException occurred: {}", ex.getMessage(), ex);
+		return ResponseEntity.badRequest().body(errorStructure.setStatusCode(HttpStatus.BAD_REQUEST.value())
+				.setMessage(ex.getMessage()).setRootCouse("Password  Incorrect please  aGive Proper Password  ..."));
+	}
+
+//	@ExceptionHandler
+//	public ResponseEntity<ErrorStructure<String>> handleAccessTokenExpireException(AccessTokenExpireException ex) {
+//		logger.error("AccessTokenExpireException occurred: {}", ex.getMessage(), ex);
+//		return ResponseEntity.badRequest().body(errorStructure.setStatusCode(HttpStatus.BAD_REQUEST.value())
+//				.setMessage(ex.getMessage()).setRootCouse("Access   Token IS Expired  please Refresh  The Token..."));
+//	}
+	@ExceptionHandler
+	public ResponseEntity<ErrorStructure<String>> handleAccessDeniedException(CustomAccessDeniedException ex) {
+		logger.error("AccessDeniedException occurred: {}", ex.getMessage(), ex);
+
+		// Create a structured error response
+		ErrorStructure<String> errorStructure = new ErrorStructure<>();
+		errorStructure.setStatusCode(HttpStatus.FORBIDDEN.value()).setMessage("Access Denied: " + ex.getMessage())
+				.setRootCouse(
+						"You do not have permission to access this resource. Please contact admin if this is unexpected.");
+
+		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorStructure);
 	}
 
 }

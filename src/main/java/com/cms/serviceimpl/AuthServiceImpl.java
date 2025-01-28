@@ -24,6 +24,7 @@ import com.cms.entity.User;
 import com.cms.exceptions.AccessTokenExpireException;
 import com.cms.exceptions.InvalidCreadentialsException;
 import com.cms.exceptions.InvalidRoleException;
+import com.cms.exceptions.PasswordNotValidException;
 import com.cms.exceptions.PleaseGiveRefreshAccessTokenRequest;
 import com.cms.exceptions.UserAllReadyRegisteredException;
 import com.cms.exceptions.UserIsAllreadyLoginException;
@@ -96,6 +97,7 @@ public class AuthServiceImpl implements AuthService {
 			String refreshToken) {
 		logger.info("Attempting to get Login with Username and Password: {}", loginRequest);
 		if (accessToken != null && refreshToken != null) {
+
 			logger.error("Unauthorized access attempt to Login .");
 			throw new UserIsAllreadyLoginException("You Allready Login....");
 		}
@@ -104,14 +106,22 @@ public class AuthServiceImpl implements AuthService {
 			throw new AccessTokenExpireException("your Accestone expire please Regenerate Your AccessToken");
 		}
 		String username = loginRequest.getEmailOrUsername().split("@")[0];
-		if (username == null) {
-			username = loginRequest.getEmailOrUsername();
-		}
+
+		System.out.println("Login User Name: " + username);
 		logger.debug("Authenticated user: {}", username);
-		Authentication authenticate = authenticationManager
-				.authenticate(new UsernamePasswordAuthenticationToken(username, loginRequest.getPassword()));
+		Authentication authenticate = null;
+		try {
+			authenticate = authenticationManager
+					.authenticate(new UsernamePasswordAuthenticationToken(username, loginRequest.getPassword()));
+		} catch (Exception e) {
+			// TODO: handle exception
+			throw new PasswordNotValidException(" password is invalid");
+		}
+		System.out.println("return.....");
 		if (!authenticate.isAuthenticated()) {
+			System.out.println("invalid details");
 			logger.error("Unauthorized access attempt to Login .");
+			System.out.println("throwing exception");
 			throw new InvalidCreadentialsException("please enter valid Credentials....");
 		}
 		SecurityContextHolder.getContext().setAuthentication(authenticate);

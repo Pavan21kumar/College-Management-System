@@ -96,16 +96,16 @@ public class TeacherServiceImpl implements TeacherService {
 		String username = authentication.getName();
 
 		logger.debug("Authenticated user: {}", username);
-		User user = userRepo.findByUsername(username).get();
-		if (!user.getRole().name().equals(Role.TEACHER.name()) || (!user.getRole().name().equals(Role.ADMIN.name()))) {
-
-			logger.error("Unauthorized access attempt to update Student.");
-			throw new UnauthorizedException("Only Admin Can Access This Page");
-		}
+		// User user = userRepo.findByUsername(username).get();
+//		if (!user.getRole().name().equals(Role.TEACHER.name()) || (!user.getRole().name().equals(Role.ADMIN.name()))) {
+//
+//			logger.error("Unauthorized access attempt to update Student.");
+//			throw new UnauthorizedException("Only Admin Can Access This Page");
+//		}
 		return studentRepo.findByIdAndRole(sId, Role.STUDENT).map(student -> {
 
 			student = mapToStudent(student, request);
-			studentRepo.save(student);
+			student = studentRepo.save(student);
 
 			logger.debug("Student data updated :", student);
 			return ResponseEntity.ok(studnetResponseStructure.setStatusCode(HttpStatus.OK.value())
@@ -127,12 +127,12 @@ public class TeacherServiceImpl implements TeacherService {
 		String username = authentication.getName();
 
 		logger.debug("Authenticated user: {}", username);
-		User user = userRepo.findByUsername(username).get();
-		if (!user.getRole().name().equals(Role.TEACHER.name())) {
-
-			logger.error("Unauthorized user: {} attempted to get All Students", username);
-			throw new UnauthorizedException("Only  and Teachers Can Access This Page");
-		}
+//		User user = userRepo.findByUsername(username).get();
+//		if (!user.getRole().name().equals(Role.TEACHER.name())) {
+//
+//			logger.error("Unauthorized user: {} attempted to get All Students", username);
+//			throw new UnauthorizedException("Only  and Teachers Can Access This Page");
+//		}
 		return teacherRepo.findByUsername(username).map(teacher -> {
 			List<Student> students = studentRepo.findAllByTeacherId(teacher.getId());
 			if (students == null) {
@@ -158,7 +158,7 @@ public class TeacherServiceImpl implements TeacherService {
 	public StudentResponse mapToStudentResponses(Student s) {
 
 		return StudentResponse.builder().name(s.getName()).usernmae(s.getUsername()).marks(s.getMarks())
-				.grade(s.getGrade()).build();
+				.grade(s.getGrade()).sId(s.getId()).build();
 	}
 
 	private List<Student> mapToStudents(List<StudentRequest> studentRequests, String id) {
@@ -176,7 +176,6 @@ public class TeacherServiceImpl implements TeacherService {
 		student.setUsername(studentRequest.getEmail().split("@")[0]);
 		student.setPassword(encoder.encode(studentRequest.getPassword()));
 		student.setRole(Role.STUDENT);
-		student.setMarks(Arrays.asList(studentRequest.getMarks()));
 		student.setTeacherId(Arrays.asList(id));
 
 		if (studentRepo.existsByUsername(student.getUsername()))
@@ -191,11 +190,16 @@ public class TeacherServiceImpl implements TeacherService {
 		if (request.getName() != null)
 			student.setName(request.getName());
 		if (request.getPassword() != null)
-			student.setPassword(request.getPassword());
+			student.setPassword(encoder.encode(request.getPassword()));
 		if (request.getEmail() != null)
 			student.setUsername(request.getEmail());
-		if (request.getMarks() != 0)
-			student.setMarks(Arrays.asList(request.getMarks()));
+		if (request.getMarks() != 0) {
+			if (student.getMarks() != null) {
+				student.getMarks().add(request.getMarks());
+			} else {
+				student.setMarks(Arrays.asList(request.getMarks()));
+			}
+		}
 		if (request.getGrade() != 0)
 			student.setGrade(request.getGrade());
 		return student;

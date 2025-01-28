@@ -33,7 +33,7 @@ public class RefreshFilter extends OncePerRequestFilter {
 		// TODO Auto-generated method stub
 
 		String rt = null;
-		System.out.println("inside Jwt Filter..............................");
+		System.out.println("inside Jwt Filter. For REfresh. Token............................");
 		if (request.getCookies() != null) {
 			for (Cookie cookie : request.getCookies()) {
 				if (cookie.getName().equals("rt"))

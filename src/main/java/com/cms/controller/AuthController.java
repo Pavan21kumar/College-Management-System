@@ -3,6 +3,7 @@ package com.cms.controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -36,6 +37,7 @@ public class AuthController {
 			@ApiResponse(responseCode = "200", description = "User registered successfully", content = @Content(schema = @Schema(implementation = SimpleResponseStructure.class))),
 			@ApiResponse(responseCode = "400", description = "Invalid request data", content = @Content(schema = @Schema(implementation = SimpleResponseStructure.class))),
 			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = SimpleResponseStructure.class))) })
+	@PreAuthorize("hasAuthority('ADMIN')")
 	@PostMapping("/user/register")
 	public ResponseEntity<SimpleResponseStructure> rerister(@Valid @RequestBody UserRequest userRequest) {
 		logger.info("Received request to register a new user: {}", userRequest);
@@ -59,15 +61,12 @@ public class AuthController {
 			@CookieValue(name = "at", required = false) String accessToken,
 			@CookieValue(name = "rt", required = false) String refreshToken) {
 		logger.info("Received login request for username: {}", loginRequest.getEmailOrUsername().split("@")[0]);
-		try {
-			ResponseEntity<ResponseStructure<AuthResponse>> response = authService.login(loginRequest, accessToken,
-					refreshToken);
-			logger.info("Login successful for username: {}", loginRequest.getEmailOrUsername().split("@")[0]);
-			return response;
-		} catch (Exception ex) {
-			logger.error("Error occurred during login: {}", ex.getMessage(), ex);
-			throw ex;
-		}
+
+		ResponseEntity<ResponseStructure<AuthResponse>> response = authService.login(loginRequest, accessToken,
+				refreshToken);
+		logger.info("Login successful for username: {}", loginRequest.getEmailOrUsername().split("@")[0]);
+		return response;
+
 	}
 
 	@Operation(summary = "User logout", description = "This endpoint is used to log out a user by invalidating access and refresh tokens.")
